@@ -20,6 +20,50 @@ When deserializing data, Serde constructs a Visitor type that tells the parser
 exactly how to map unstructured keys and values into structured memory without
 the parser needing to know what final Rust struct it is assembling.
 
+### UML Diagrams
+
+#### Class Diagram
+
+```
+┌──────────────────────────────┐      ┌──────────────────────────────┐
+│         «interface»          │      │        «interface»           │
+│          Visitor             │      │           Shape              │
+│──────────────────────────────│      │        (Visitable)           │
+│ + visit_circle(&mut self,    │      │──────────────────────────────│
+│     circle: &Circle)         │      │ + accept(&self, visitor:     │
+│ + visit_rectangle(&mut self, │      │     &mut dyn Visitor)        │
+│     rectangle: &Rectangle)   │      └──────────────┬───────────────┘
+└──────────────┬───────────────┘                     │ implements
+               │ ▲                                   │
+               │ │ «implements»                      ▼
+┌──────────────┴───────────────┐      ┌──────────────────────────────┐
+│       TotalAreaCalculator    │      │              ^               │
+│      (ConcreteVisitor)       │      │              │               │
+│──────────────────────────────│      │              └───_..._       │
+│ + total_area: f64            │   ┌────────────┐              ┌────────────┐
+│──────────────────────────────│   │   Circle   │              │ Rectangle  │
+│ + new()                      │   │────────────│              │────────────│
+│ + visit_circle(...)          │   │ + radius:  │              │ + width:   │
+│ + visit_rectangle(...)       │   │   f64      │              │   f64      │
+└──────────────────────────────┘   │            │              │ + height:  │
+                                   │            │              │   f64      │
+                                   └────────────┘              └────────────┘
+```
+
+#### Double-Dispatch Flow
+
+```
+   1st dispatch              2nd dispatch
+┌────────────────────────┐        ┌──────────────────────────────┐
+│ shape.accept(&visitor) │  ───▶ │ visitor.visit_circle(circle) │
+└────────────────────────┘        └──────────────────────────────┘
+(Shape calls Visitor back)        (visitor calls back on the concrete type)
+```
+
+In Rust's trait form: `Shape` holds an `accept(&mut dyn Visitor)`; each concrete
+type (`Circle`, `Rectangle`) re-dispatches to the matching `visit_*` method — the
+"double dispatch."
+
 ### Summary Comparison
 
 | Feature | Enums & Pattern Matching | Classic Trait Visitor |
