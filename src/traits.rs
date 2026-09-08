@@ -112,3 +112,49 @@ fn main() {
 
     println!("Total Area: {}", total_area_calculator.total_area);
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::f64::consts::PI;
+
+    #[test]
+    fn default_starts_with_zero_area() {
+        assert_eq!(TotalAreaCalculator::default().total_area, 0.0);
+    }
+
+    #[test]
+    fn circle_accept_visits_circle() {
+        let mut visitor = TotalAreaCalculator::default();
+        let circle = Circle { radius: 2.0 };
+        circle.accept(&mut visitor);
+        assert_eq!(visitor.total_area, PI * 4.0);
+    }
+
+    #[test]
+    fn rectangle_accept_visits_rectangle() {
+        let mut visitor = TotalAreaCalculator::default();
+        let rectangle = Rectangle {
+            width: 3.0,
+            height: 4.0,
+        };
+        rectangle.accept(&mut visitor);
+        assert_eq!(visitor.total_area, 12.0);
+    }
+
+    #[test]
+    fn accumulates_area_across_multiple_shapes() {
+        let mut visitor = TotalAreaCalculator::default();
+        let shapes: Vec<Box<dyn Shape>> = vec![
+            Box::new(Circle { radius: 2.0 }),
+            Box::new(Rectangle {
+                width: 3.0,
+                height: 4.0,
+            }),
+        ];
+        for shape in &shapes {
+            shape.accept(&mut visitor);
+        }
+        assert_eq!(visitor.total_area, PI * 4.0 + 12.0);
+    }
+}
