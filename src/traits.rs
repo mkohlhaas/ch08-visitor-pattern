@@ -17,7 +17,7 @@
 // 1. Define the Visitor and Visitable Traits //
 // ========================================== //
 
-// What shapes can we visit? circles, rectangles
+// What shapes can we visit? Circles and Rectangles.
 
 pub trait Visitor {
     // the Visitor trait defines what actions can happen on each data type.
@@ -28,6 +28,8 @@ pub trait Visitor {
 // ==================================================================== //
 // 2. The Shape (Visitable) trait defines the entry point for a visitor //
 // ==================================================================== //
+
+// the Visitable accepts a Visitor
 
 pub trait Shape {
     fn accept(&self, visitor: &mut dyn Visitor);
@@ -45,6 +47,7 @@ pub struct Circle {
     pub radius: f64,
 }
 
+// the Visitable forwards to Visitor
 impl Shape for Circle {
     fn accept(&self, visitor: &mut dyn Visitor) {
         // Double-dispatch: Redirects execution back to the visitor
@@ -72,20 +75,9 @@ impl Shape for Rectangle {
 // =============================== //
 
 // A visitor that tracks internal state (the total calculated area)
+#[derive(Default)]
 pub struct TotalAreaCalculator {
     pub total_area: f64,
-}
-
-impl TotalAreaCalculator {
-    pub fn new() -> Self {
-        Self { total_area: 0.0 }
-    }
-}
-
-impl Default for TotalAreaCalculator {
-    fn default() -> Self {
-        Self::new()
-    }
 }
 
 impl Visitor for TotalAreaCalculator {
@@ -112,7 +104,7 @@ fn main() {
         }),
     ];
 
-    let mut total_area_calculator = TotalAreaCalculator::new();
+    let mut total_area_calculator = TotalAreaCalculator::default();
 
     for shape in &shapes {
         shape.accept(&mut total_area_calculator);
